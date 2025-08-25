@@ -1,0 +1,16 @@
+[project]
+name = "bbi-container-tracking-python-sdk"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "loguru>=0.7.3",
+    "pydantic>=2.11.7",
+    "requests>=2.32.5",
+]
+
+[dependency-groups]
+dev = [
+    "python-dotenv>=1.1.1",
+]
