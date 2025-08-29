@@ -1,7 +1,17 @@
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Generic, Literal, Optional, TypeVar
 
 from pydantic import BaseModel
+
+T = TypeVar("T", bound=BaseModel)
+
+
+
+class Page(BaseModel, Generic[T]):
+    total: int
+    limit: int
+    offset: int
+    items: list[T]
 
 
 class Carrier(BaseModel):
