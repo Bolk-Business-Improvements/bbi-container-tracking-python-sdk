@@ -80,15 +80,31 @@ class BBIContainerTracking:
         response.raise_for_status()
         return TypeAdapter(model).validate_python(response.json())
 
-    def create_shipment(self, booking_number: str) -> ShipmentBase:
+    def create_shipment(
+        self, booking_number: str, raise_on_conflict: bool = False
+    ) -> ShipmentBase:
         """
         Track a booking by its booking number.
         """
-        return self._post_request(
-            endpoint="/shipments",
-            model=ShipmentBase,
-            data={"booking_number": booking_number},
-        )
+        try:
+            return self._post_request(
+                endpoint="/shipments",
+                model=ShipmentBase,
+                data={"booking_number": booking_number},
+            )
+
+        except requests.exceptions.HTTPError as e:
+            if raise_on_conflict is False and e.response.status_code == 409:
+                shipment = self.read_shipment_by_booking_number(booking_number)
+                if shipment is not None:
+                    return ShipmentBase(
+                        id=shipment.id,
+                        booking_number=shipment.booking_number,
+                    )
+
+                logger.error(f"Shipment not found after conflict: {booking_number}")
+
+            raise e
 
     def read_shipment_by_id(self, shipment_id: int) -> Optional[Shipment]:
         """

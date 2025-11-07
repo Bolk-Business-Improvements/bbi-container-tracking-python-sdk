@@ -6,7 +6,6 @@ from pydantic import BaseModel
 T = TypeVar("T", bound=BaseModel)
 
 
-
 class Page(BaseModel, Generic[T]):
     total: int
     limit: int
@@ -84,13 +83,15 @@ class Container(BaseModel):
 
 
 class ShipmentCreate(BaseModel):
-    reference: Optional[str] = None
     booking_number: str
 
 
-class Shipment(BaseModel):
+class ShipmentBase(BaseModel):
     id: int
-    booking_number: Optional[str]
+    booking_number: str
+
+
+class Shipment(ShipmentBase):
     carrier: Optional[Carrier]
     status: Literal[
         "NEW",
@@ -109,9 +110,3 @@ class Shipment(BaseModel):
     changed_at: Optional[datetime]
     created_at: datetime
     updated_at: datetime
-
-
-class ShipmentBase(BaseModel):
-    id: int
-    reference: Optional[str]
-    booking_number: str
