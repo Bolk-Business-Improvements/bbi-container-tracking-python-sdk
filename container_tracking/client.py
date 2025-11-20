@@ -21,7 +21,6 @@ T = TypeVar("T", bound=BaseModel)
 class BBIContainerTracking:
     def __init__(self, api_key: str, timeout: int = 10):
         self.base_url = "https://api.container-tracking.bolk-bi.com/v1"
-        # self.base_url = "http://localhost:8080/v1"
         self.timeout = timeout
         self.api_key = api_key
 
