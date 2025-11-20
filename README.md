@@ -21,25 +21,27 @@ import os
 client = BBIContainerTracking(api_key=os.environ["CONTAINER_TRACKING_API_KEY"])
 ```
 
-### Create ocean shipment
+### Ocean Shipment Examples
+
+#### Create ocean shipment
 
 ```
 shipment = client.create_ocean_shipment(booking_number="WECC2588AMS1032")
 ```
 
-### Read ocean shipment by ID
+#### Read ocean shipment by ID
 
 ```
 shipment = client.read_ocean_shipment_by_id(1)
 ```
 
-### Read ocean shipment by booking number (BL)
+#### Read ocean shipment by booking number (BL)
 
 ```
 shipment = client.read_ocean_shipment_by_booking_number("WECC2588AMS1032")
 ```
 
-### Read all ocean shipments (paginated)
+#### Read all ocean shipments (paginated)
 
 ```
 from datetime import datetime
@@ -47,31 +49,33 @@ for shipment in client.read_ocean_shipments_paginated(page_size=100, changed_at_
     print(shipment)
 ```
 
-### List all ocean carriers
+#### List all ocean carriers
 
 ```
 carriers = client.read_ocean_carriers()
 ```
 
-### Create air shipment
+### Air Shipment Examples
+
+#### Create air shipment
 
 ```
 shipment = client.create_air_shipment(awb_number="1234567890")
 ```
 
-### Read air shipment by ID
+#### Read air shipment by ID
 
 ```
 shipment = client.read_air_shipment_by_id(1)
 ```
 
-### Read air shipment by AWB number
+#### Read air shipment by AWB number
 
 ```
 shipment = client.read_air_shipment_by_awb_number("1234567890")
 ```
 
-### Read all air shipments (paginated)
+#### Read all air shipments (paginated)
 
 ```
 from datetime import datetime
