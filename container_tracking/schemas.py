@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Generic, Literal, Optional, TypeVar
+from typing import Generic, Literal, TypeVar
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -13,58 +13,67 @@ class Page(BaseModel, Generic[T]):
     items: list[T]
 
 
-class Carrier(BaseModel):
+# -- Ocean Shipment Schemas --
+
+
+class OceanCarrierDetail(BaseModel):
+    scac: str
+    name: str
+    status: Literal["ACTIVE", "PASSIVE"]
+
+
+class OceanCarrier(BaseModel):
     scac: str
     name: str
 
 
-class Country(BaseModel):
+class OceanCountry(BaseModel):
     code: str
     name: str
 
 
-class Vessel(BaseModel):
-    imo: Optional[int]
-    name: Optional[str]
+class OceanVessel(BaseModel):
+    imo: int | None
+    name: str | None
 
 
-class Location(BaseModel):
+class OceanLocation(BaseModel):
     code: str
     name: str
     timezone: str
-    country: Country
+    country: OceanCountry
 
 
-class PortOfLoading(BaseModel):
-    location: Location
-    date_of_loading: Optional[datetime]
-    date_of_loading_initial: Optional[datetime]
+class OceanPortOfLoading(BaseModel):
+    location: OceanLocation
+    date_of_loading: datetime | None
+    date_of_loading_initial: datetime | None
 
 
-class PortOfDischarge(BaseModel):
-    location: Location
-    date_of_discharge: Optional[datetime]
-    date_of_discharge_initial: Optional[datetime]
+class OceanPortOfDischarge(BaseModel):
+    location: OceanLocation
+    date_of_discharge: datetime | None
+    date_of_discharge_initial: datetime | None
 
 
-class Route(BaseModel):
-    port_of_loading: PortOfLoading
-    port_of_discharge: PortOfDischarge
-    transit_time: Optional[int]
-    transit_percentage: Optional[int]
-    co2_emission: Optional[float]
+class OceanRoute(BaseModel):
+    port_of_loading: OceanPortOfLoading
+    port_of_discharge: OceanPortOfDischarge
+    transit_time: int | None
+    transit_percentage: int | None
+    co2_emission: float | None
 
 
-class Movement(BaseModel):
+class OceanMovement(BaseModel):
     event: Literal["EMSH", "GTIN", "LOAD", "DEPA", "ARRV", "DISC", "GTOT", "EMRT"]
     status: Literal["EST", "ACT"]
-    location: Location
-    vessel: Optional[Vessel]
-    voyage: Optional[str]
+    location: OceanLocation
+    vessel: OceanVessel | None
+    voyage: str | None
     timestamp: datetime
 
 
-class Container(BaseModel):
+class OceanContainer(BaseModel):
     number: str
     status: Literal[
         "EMPTY_SHIPPER",
@@ -77,22 +86,22 @@ class Container(BaseModel):
         "EMPTY_RETURN",
         "UNKNOWN",
     ]
-    size: Optional[int]
-    type: Optional[str]
-    movements: list[Movement]
+    size: int | None
+    type: str | None
+    movements: list[OceanMovement]
 
 
-class ShipmentCreate(BaseModel):
+class OceanShipmentCreate(BaseModel):
     booking_number: str
 
 
-class ShipmentBase(BaseModel):
+class OceanShipmentBase(BaseModel):
     id: int
     booking_number: str
 
 
-class Shipment(ShipmentBase):
-    carrier: Optional[Carrier]
+class OceanShipment(OceanShipmentBase):
+    carrier: OceanCarrier | None
     status: Literal[
         "NEW",
         "INPROGRESS",
@@ -103,10 +112,95 @@ class Shipment(ShipmentBase):
         "DISCHARGED",
         "UNTRACKED",
     ]
-    route: Optional[Route]
-    containers: list[Container]
-    checked_at: Optional[datetime]
-    discarded_at: Optional[datetime]
-    changed_at: Optional[datetime]
+    route: OceanRoute | None
+    containers: list[OceanContainer]
+    checked_at: datetime | None
+    discarded_at: datetime | None
+    changed_at: datetime | None
     created_at: datetime
     updated_at: datetime
+
+
+# -- Air Shipment Schemas --
+
+
+class AirAirline(BaseModel):
+    iata: str
+    name: str
+
+
+class AirCargo(BaseModel):
+    pieces: int | None
+    weight: float | None
+    volume: float | None
+
+
+class AirCountry(BaseModel):
+    code: str
+    name: str
+
+
+class AirLocation(BaseModel):
+    name: str
+    iata: str
+    timezone: str
+    country: AirCountry
+
+
+class AirRouteOrigin(BaseModel):
+    location: AirLocation
+    date_of_dep: datetime
+    date_of_dep_initial: datetime
+
+
+class AirRouteDestination(BaseModel):
+    location: AirLocation
+    date_of_rcf: datetime
+    date_of_rcf_initial: datetime
+
+
+class AirRoute(BaseModel):
+    origin: AirRouteOrigin
+    ts_count: int
+    destination: AirRouteDestination
+    transit_time: int
+    transit_percentage: int
+
+
+class AirMovement(BaseModel):
+    event: Literal["RCS", "MAN", "DEP", "ARR", "RCF", "DLV"]
+    status: Literal["EST", "ACT"]
+    cargo: AirCargo
+    location: AirLocation
+    flight: str | None
+    timestamp: datetime
+
+
+class AirShipmentBase(BaseModel):
+    id: int
+    awb_number: str
+
+
+class AirShipment(AirShipmentBase):
+    airline: AirAirline | None
+    cargo: AirCargo
+    status: Literal[
+        "NEW",
+        "INPROGRESS",
+        "BOOKED",
+        "EN_ROUTE",
+        "LANDED",
+        "DELIVERED",
+        "UNTRACKED",
+    ]
+    route: AirRoute | None
+    movements: list[AirMovement]
+    checked_at: datetime | None
+    discarded_at: datetime | None
+    changed_at: datetime | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class AirShipmentCreate(BaseModel):
+    awb_number: str = Field(..., pattern=r"^[0-9]{3}(-)?[0-9]{8}$")
